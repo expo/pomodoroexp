@@ -7,6 +7,8 @@ let {
   ScrollView,
   Navigator,
   StyleSheet,
+  Platform,
+  TouchableNativeFeedback,
   Text,
   View,
 } = React;
@@ -200,14 +202,27 @@ class Button extends React.Component {
 
   render() {
     let { scale } = this.state;
+    let buttonProps = {};
+    let TouchableComponent;
+
+    if (Platform.OS === 'ios') {
+      TouchableComponent = TouchableBounce;
+    } else {
+      TouchableComponent = TouchableNativeFeedback;
+      buttonProps = {
+        background: TouchableNativeFeedback.Ripple('#fff', false),
+      };
+    }
 
     return (
-      <Animated.View style={{transform: [{scale}]}}>
-        <TouchableBounce style={styles.button} onPress={this.props.onPress}>
-          <Text style={styles.buttonText}>
-            {this.props.children}
-          </Text>
-        </TouchableBounce>
+      <Animated.View style={{opacity: scale, transform: [{scale}]}}>
+        <TouchableComponent onPress={this.props.onPress} {...buttonProps}>
+          <View style={styles.button}>
+            <Text style={styles.buttonText}>
+              {this.props.children}
+            </Text>
+          </View>
+        </TouchableComponent>
       </Animated.View>
     );
   }
@@ -244,7 +259,6 @@ let styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#4C4747',
-    borderRadius: 15,
     paddingHorizontal: 30,
     paddingVertical: 15,
     marginHorizontal: 10,
@@ -252,7 +266,7 @@ let styles = StyleSheet.create({
   buttonText: {
     fontWeight: '200',
     color: '#fff',
-    fontSize: 30,
+    fontSize: 25,
   },
   countdown: {
     color: '#fff',
