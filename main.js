@@ -1,7 +1,6 @@
 'use strict';
 
-let React = require('react-native');
-let {
+import React, {
   Animated,
   AppRegistry,
   ScrollView,
@@ -11,9 +10,10 @@ let {
   TouchableNativeFeedback,
   Text,
   View,
-} = React;
+} from 'react-native';
 
-let TouchableBounce = require('react-native/Libraries/Components/Touchable/TouchableBounce');
+import TouchableBounce from 'react-native/Libraries/Components/Touchable/TouchableBounce';
+import DrawerLayout from 'react-native-drawer-layout';
 
 class PomodoroApp extends React.Component {
 
@@ -27,11 +27,21 @@ class PomodoroApp extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Navigator
-          initialRoute={{id: 'home'}}
-          renderScene={this._renderScene} />
+        <DrawerLayout
+          drawerWidth={300}
+          renderNavigationView={this._renderMenu.bind(this)}>
+          <Navigator
+            initialRoute={{id: 'home'}}
+            renderScene={this._renderScene} />
+        </DrawerLayout>
       </View>
     );
+  }
+
+  _renderMenu() {
+    return (
+      <View style={{backgroundColor: '#fff', flex: 1}} />
+    )
   }
 
   _renderScene(route, navigator) {
