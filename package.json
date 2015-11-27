@@ -11,6 +11,6 @@
   },
   "dependencies": {
     "react-native": "exponentjs/react-native#2015-11-13",
-    "react-native-drawer-layout": "^0.2.1"
+    "react-native-drawer-layout": "iodine/react-native-drawer-layout#b9008691"
   }
 }

@@ -7,7 +7,7 @@ import React, {
   Platform,
   StyleSheet,
   Text,
-  TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 
@@ -15,9 +15,9 @@ import DrawerLayout from 'react-native-drawer-layout';
 import Button from './Button';
 import pad from './pad';
 
-const DEFAULT_WORK_DURATION = 5;
-const DEFAULT_BREAK_DURATION = 1;
-const ONE_SECOND = 250;
+const DEFAULT_WORK_DURATION = 0.25;
+const DEFAULT_BREAK_DURATION = 0.15;
+const ONE_SECOND = 500;
 
 class PomodoroApp extends React.Component {
 
@@ -66,6 +66,7 @@ class PomodoroApp extends React.Component {
         fontSize: 23,
         fontWeight: 'bold',
         color: '#fff',
+        backgroundColor: 'transparent',
       },
       menuOptions: {
         backgroundColor: '#fff',
@@ -121,8 +122,8 @@ class PomodoroApp extends React.Component {
   _renderOptions({title, options, stateKey}) {
     let styles = {
       optionsContainer: {
-        paddingTop: 15,
-        paddingBottom: 10,
+        paddingTop: 12,
+        paddingBottom: 5,
         borderBottomColor: '#eee',
         borderBottomWidth: 1,
       },
@@ -163,13 +164,14 @@ class PomodoroApp extends React.Component {
       let isSelected = this.state[stateKey] === option;
 
       return (
-        <TouchableOpacity
-          onPress={() => this.setState((state) => { state[stateKey] = option; return state; })}
-          style={[styles.optionButton, isSelected && styles.optionButtonSelected]}>
-          <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
-            {option} min.
-          </Text>
-        </TouchableOpacity>
+        <TouchableWithoutFeedback
+          onPress={() => this.setState((state) => { state[stateKey] = option; return state; })}>
+          <View style={[styles.optionButton, isSelected && styles.optionButtonSelected]}>
+            <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
+              {option} min.
+            </Text>
+          </View>
+        </TouchableWithoutFeedback>
       );
     });
 
