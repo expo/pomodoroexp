@@ -1,68 +1,192 @@
 'use strict';
 
 import React, {
-  Animated,
   AppRegistry,
-  ScrollView,
-  Navigator,
-  StyleSheet,
+  Animated,
+  Image,
   Platform,
-  TouchableNativeFeedback,
+  StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 
-import TouchableBounce from 'react-native/Libraries/Components/Touchable/TouchableBounce';
 import DrawerLayout from 'react-native-drawer-layout';
+import Button from './Button';
+import pad from './pad';
+
+const DEFAULT_WORK_DURATION = 5;
+const DEFAULT_BREAK_DURATION = 1;
+const ONE_SECOND = 250;
 
 class PomodoroApp extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-
+      workDuration: DEFAULT_WORK_DURATION,
+      breakDuration: DEFAULT_BREAK_DURATION,
     };
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <DrawerLayout
-          drawerWidth={300}
-          renderNavigationView={this._renderMenu.bind(this)}>
-          <Navigator
-            initialRoute={{id: 'home'}}
-            renderScene={this._renderScene} />
+        <DrawerLayout drawerWidth={310} renderNavigationView={this._renderMenu.bind(this)}>
+          <MainScreen {...this.state} />
         </DrawerLayout>
       </View>
     );
   }
 
   _renderMenu() {
+    let styles = {
+      menuHeader: {
+        height: 150,
+        justifyContent: 'center',
+        padding: 20,
+        paddingTop: 50,
+      },
+      menuHeaderBackground: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+      },
+      menuHeaderOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+      },
+      menuHeaderText: {
+        fontSize: 23,
+        fontWeight: 'bold',
+        color: '#fff',
+      },
+      menuOptions: {
+        backgroundColor: '#fff',
+        paddingBottom: 0,
+      },
+      menuFooter: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingBottom: 15,
+      },
+      menuFooterImage: {
+        width: 150,
+        height: 25,
+      },
+    };
+
     return (
-      <View style={{backgroundColor: '#fff', flex: 1}} />
+      <View style={{backgroundColor: '#F9F9F9', flex: 1}}>
+        <View style={styles.menuHeader}>
+          <Image
+            resizeMode="cover"
+            style={styles.menuHeaderBackground}
+            source={{uri: 'https://s3.amazonaws.com/pomodoroexp/patch.jpg'}} />
+          <View style={styles.menuHeaderOverlay} />
+
+          <Text style={styles.menuHeaderText}>
+            Pomodoroexp
+          </Text>
+        </View>
+
+        <View style={styles.menuOptions}>
+          {this._renderOptions({
+            title: 'Work',
+            options: [5, 10, 15, 20],
+            stateKey: 'workDuration'})}
+
+          {this._renderOptions({
+            title: 'Break',
+            options: [1, 2.5, 5, 7.5],
+            stateKey: 'breakDuration'})}
+        </View>
+
+        <View style={styles.menuFooter}>
+          <Image
+            style={styles.menuFooterImage}
+            source={{uri: 'https://s3.amazonaws.com/pomodoroexp/exponent.png'}} />
+        </View>
+      </View>
     )
   }
 
-  _renderScene(route, navigator) {
-    if (route.id === 'home') {
-      return <MainScreen navigator={navigator} />;
-    } else if (route.id === 'settings') {
-      return <SettingsScreen navigator={navigator} />;
-    }
+  _renderOptions({title, options, stateKey}) {
+    let styles = {
+      optionsContainer: {
+        paddingTop: 15,
+        paddingBottom: 10,
+        borderBottomColor: '#eee',
+        borderBottomWidth: 1,
+      },
+      optionsTitle: {
+        paddingLeft: 15,
+        paddingBottom: 12,
+        paddingTop: 0,
+      },
+      optionsTitleText: {
+        fontSize: 19,
+        fontWeight: '300',
+      },
+      optionContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        padding: 15,
+        paddingTop: 0,
+      },
+      optionButton: {
+        padding: 10,
+        borderRadius: 3,
+        backgroundColor: '#eee',
+      },
+      optionButtonSelected: {
+        backgroundColor: '#D03838',
+      },
+      optionText: {
+        color: '#888',
+      },
+      optionTextSelected: {
+        color: '#fff',
+        fontWeight: 'bold',
+      },
+    };
+
+    let optionElements = options.map((option) => {
+      let isSelected = this.state[stateKey] === option;
+
+      return (
+        <TouchableOpacity
+          onPress={() => this.setState((state) => { state[stateKey] = option; return state; })}
+          style={[styles.optionButton, isSelected && styles.optionButtonSelected]}>
+          <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
+            {option} min.
+          </Text>
+        </TouchableOpacity>
+      );
+    });
+
+    return (
+      <View style={styles.optionsContainer}>
+        <View style={styles.optionsTitle}>
+          <Text style={styles.optionsTitleText}>
+            {title}
+          </Text>
+        </View>
+        <View style={styles.optionContainer}>
+          {optionElements}
+        </View>
+      </View>
+    );
   }
 }
-
-function pad(num, size) {
-  var s = num+"";
-  while (s.length < size) s = "0" + s;
-  return s;
-}
-
-// const POMODORO = 20 * 60;
-// const BREAK = 5 * 60;
-const POMODORO_DURATION = 10;
-const BREAK_DURATION = 5;
 
 class MainScreen extends React.Component {
 
@@ -70,7 +194,7 @@ class MainScreen extends React.Component {
     super(props);
     this.state = {
       backgroundColor: new Animated.Value(0),
-      totalTimeRemaining: POMODORO_DURATION,
+      totalTimeRemaining: this.props.workDuration * 60,
       countdownState: 'idle',
     };
   }
@@ -90,6 +214,13 @@ class MainScreen extends React.Component {
         {this._renderButtons()}
       </Animated.View>
     );
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.workDuration !== this.props.workDuration &&
+        this.state.countdownState === 'idle') {
+      this.setState({totalTimeRemaining: nextProps.workDuration * 60});
+    }
   }
 
   _renderTimeRemaining() {
@@ -157,7 +288,8 @@ class MainScreen extends React.Component {
   }
 
   _stopTimer() {
-    this.setState({countdownState: 'idle', totalTimeRemaining: POMODORO_DURATION}, () => {
+    let { workDuration } = this.props;
+    this.setState({countdownState: 'idle', totalTimeRemaining: workDuration * 60}, () => {
       Animated.spring(this.state.backgroundColor, {toValue: 0}).start();
       clearInterval(this._timer);
       this._timer = null;
@@ -165,9 +297,10 @@ class MainScreen extends React.Component {
   }
 
   _startTimer() {
+    let { workDuration } = this.props;
     clearInterval(this._timer);
 
-    this.setState({countdownState: 'active', totalTimeRemaining: POMODORO_DURATION}, () => {
+    this.setState({countdownState: 'active', totalTimeRemaining: workDuration * 60}, () => {
       Animated.spring(this.state.backgroundColor, {toValue: 1}).start();
       this._timer = setInterval(() => {
         if (this.state.totalTimeRemaining === 0) {
@@ -175,14 +308,15 @@ class MainScreen extends React.Component {
         } else {
           this.setState({totalTimeRemaining: this.state.totalTimeRemaining - 1});
         }
-      }, 1000);
+      }, ONE_SECOND);
     });
   }
 
   _startBreak() {
+    let { breakDuration } = this.props;
     clearInterval(this._timer);
 
-    this.setState({countdownState: 'break', totalTimeRemaining: BREAK_DURATION}, () => {
+    this.setState({countdownState: 'break', totalTimeRemaining: breakDuration * 60}, () => {
       Animated.spring(this.state.backgroundColor, {toValue: 2}).start();
       this._timer = setInterval(() => {
         if (this.state.totalTimeRemaining === 0) {
@@ -190,76 +324,12 @@ class MainScreen extends React.Component {
         } else {
           this.setState({totalTimeRemaining: this.state.totalTimeRemaining - 1});
         }
-      }, 1000);
+      }, ONE_SECOND);
     });
   }
 }
 
-class Button extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      scale: new Animated.Value(0),
-    }
-  }
-
-  componentDidMount() {
-    requestAnimationFrame(() => {
-      Animated.spring(this.state.scale, {toValue: 1}).start();
-    });
-  }
-
-  render() {
-    let { scale } = this.state;
-    let buttonProps = {};
-    let TouchableComponent;
-
-    if (Platform.OS === 'ios') {
-      TouchableComponent = TouchableBounce;
-    } else {
-      TouchableComponent = TouchableNativeFeedback;
-      buttonProps = {
-        background: TouchableNativeFeedback.Ripple('#fff', false),
-      };
-    }
-
-    return (
-      <Animated.View style={{opacity: scale, transform: [{scale}]}}>
-        <TouchableComponent onPress={this.props.onPress} {...buttonProps}>
-          <View style={styles.button}>
-            <Text style={styles.buttonText}>
-              {this.props.children}
-            </Text>
-          </View>
-        </TouchableComponent>
-      </Animated.View>
-    );
-  }
-}
-
-class SettingsScreen extends React.Component {
-
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <View />
-    );
-  }
-}
-
-let styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
+const styles = StyleSheet.create({
   buttonContainer: {
     paddingTop: 40,
     alignItems: 'flex-start',
@@ -267,16 +337,13 @@ let styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
   },
-  button: {
-    backgroundColor: '#4C4747',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    marginHorizontal: 10,
+  container: {
+    flex: 1,
   },
-  buttonText: {
-    fontWeight: '200',
-    color: '#fff',
-    fontSize: 25,
+  contentContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   countdown: {
     color: '#fff',

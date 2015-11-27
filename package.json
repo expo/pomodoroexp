@@ -7,7 +7,7 @@
   "exp": {
     "name": "Pomodorexp",
     "primaryColor": "#9D3131",
-    "iconUrl": "http://icons.iconarchive.com/icons/artbees/paradise-fruits/512/Tomato-icon.png"
+    "iconUrl": "https://s3.amazonaws.com/pomodoroexp/icon.png"
   },
   "dependencies": {
     "react-native": "exponentjs/react-native#2015-11-13",
