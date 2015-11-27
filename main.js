@@ -4,7 +4,6 @@ import React, {
   AppRegistry,
   Animated,
   Image,
-  Platform,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
@@ -13,7 +12,7 @@ import React, {
 
 import DrawerLayout from 'react-native-drawer-layout';
 import Button from './Button';
-import pad from './pad';
+import padNumber from './padNumber';
 
 const DEFAULT_WORK_DURATION = 0.25;
 const DEFAULT_BREAK_DURATION = 0.15;
@@ -23,6 +22,7 @@ class PomodoroApp extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.state = {
       workDuration: DEFAULT_WORK_DURATION,
       breakDuration: DEFAULT_BREAK_DURATION,
@@ -32,58 +32,18 @@ class PomodoroApp extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <DrawerLayout drawerWidth={310} renderNavigationView={this._renderMenu.bind(this)}>
-          <MainScreen {...this.state} />
+        <DrawerLayout
+          drawerWidth={310}
+          renderNavigationView={this._renderMenu.bind(this)}>
+
+          <CounterScreen {...this.state} />
+
         </DrawerLayout>
       </View>
     );
   }
 
   _renderMenu() {
-    let styles = {
-      menuHeader: {
-        height: 150,
-        justifyContent: 'center',
-        padding: 20,
-        paddingTop: 50,
-      },
-      menuHeaderBackground: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: 0,
-      },
-      menuHeaderOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: 0,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-      },
-      menuHeaderText: {
-        fontSize: 23,
-        fontWeight: 'bold',
-        color: '#fff',
-        backgroundColor: 'transparent',
-      },
-      menuOptions: {
-        backgroundColor: '#fff',
-        paddingBottom: 0,
-      },
-      menuFooter: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        paddingBottom: 15,
-      },
-      menuFooterImage: {
-        width: 150,
-        height: 25,
-      },
-    };
-
     return (
       <View style={{backgroundColor: '#F9F9F9', flex: 1}}>
         <View style={styles.menuHeader}>
@@ -120,46 +80,6 @@ class PomodoroApp extends React.Component {
   }
 
   _renderOptions({title, options, stateKey}) {
-    let styles = {
-      optionsContainer: {
-        paddingTop: 12,
-        paddingBottom: 5,
-        borderBottomColor: '#eee',
-        borderBottomWidth: 1,
-      },
-      optionsTitle: {
-        paddingLeft: 15,
-        paddingBottom: 12,
-        paddingTop: 0,
-      },
-      optionsTitleText: {
-        fontSize: 19,
-        fontWeight: '300',
-      },
-      optionContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        padding: 15,
-        paddingTop: 0,
-      },
-      optionButton: {
-        padding: 10,
-        borderRadius: 3,
-        backgroundColor: '#eee',
-      },
-      optionButtonSelected: {
-        backgroundColor: '#D03838',
-      },
-      optionText: {
-        color: '#888',
-      },
-      optionTextSelected: {
-        color: '#fff',
-        fontWeight: 'bold',
-      },
-    };
-
     let optionElements = options.map((option) => {
       let isSelected = this.state[stateKey] === option;
 
@@ -190,7 +110,7 @@ class PomodoroApp extends React.Component {
   }
 }
 
-class MainScreen extends React.Component {
+class CounterScreen extends React.Component {
 
   constructor(props) {
     super(props);
@@ -232,7 +152,7 @@ class MainScreen extends React.Component {
 
     return (
       <Text style={styles.countdown}>
-        {`${pad(minutesRemaining, 2)}:${pad(secondsRemaining, 2)}`}
+        {`${padNumber(minutesRemaining, 2)}:${padNumber(secondsRemaining, 2)}`}
       </Text>
     );
   }
@@ -356,7 +276,86 @@ const styles = StyleSheet.create({
     color: '#fff',
     opacity: 0.75,
     fontSize: 25,
-  }
+  },
+  menuHeader: {
+    height: 150,
+    justifyContent: 'center',
+    padding: 20,
+    paddingTop: 50,
+  },
+  menuHeaderBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+  },
+  menuHeaderOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  menuHeaderText: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: '#fff',
+    backgroundColor: 'transparent',
+  },
+  menuOptions: {
+    backgroundColor: '#fff',
+    paddingBottom: 0,
+  },
+  menuFooter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 15,
+  },
+  menuFooterImage: {
+    width: 150,
+    height: 25,
+  },
+  optionsContainer: {
+    paddingTop: 12,
+    paddingBottom: 5,
+    borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+  },
+  optionsTitle: {
+    paddingLeft: 15,
+    paddingBottom: 12,
+    paddingTop: 0,
+  },
+  optionsTitleText: {
+    fontSize: 19,
+    fontWeight: '300',
+  },
+  optionContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 15,
+    paddingTop: 0,
+  },
+  optionButton: {
+    padding: 10,
+    borderRadius: 3,
+    backgroundColor: '#eee',
+  },
+  optionButtonSelected: {
+    backgroundColor: '#D03838',
+  },
+  optionText: {
+    color: '#888',
+  },
+  optionTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 });
+
 
 AppRegistry.registerComponent('main', () => PomodoroApp);
