@@ -6,6 +6,7 @@ import React, {
   Image,
   StyleSheet,
   Text,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
@@ -17,6 +18,8 @@ import padNumber from './padNumber';
 const DEFAULT_WORK_DURATION = 0.25;
 const DEFAULT_BREAK_DURATION = 0.15;
 const ONE_SECOND = 500;
+
+const TOMATO = '🍅';
 
 class PomodoroApp extends React.Component {
 
@@ -33,14 +36,28 @@ class PomodoroApp extends React.Component {
     return (
       <View style={styles.container}>
         <DrawerLayout
+          ref={(view) => { this._drawerLayout = view; }}
           drawerWidth={310}
           renderNavigationView={this._renderMenu.bind(this)}>
 
           <CounterScreen {...this.state} />
 
+          {this._renderMenuButton()}
         </DrawerLayout>
       </View>
     );
+  }
+
+  _renderMenuButton() {
+    return (
+      <TouchableOpacity
+        onPress={() => { this._drawerLayout.openDrawer() }}
+        style={styles.menuButtonContainer}>
+        <Image
+          style={styles.menuButton}
+          source={{uri: 'https://s3.amazonaws.com/pomodoro-exp/menu-button.png'}} />
+      </TouchableOpacity>
+    )
   }
 
   _renderMenu() {
@@ -50,7 +67,7 @@ class PomodoroApp extends React.Component {
           <Image
             resizeMode="cover"
             style={styles.menuHeaderBackground}
-            source={{uri: 'https://s3.amazonaws.com/pomodoroexp/patch.jpg'}} />
+            source={{uri: 'https://s3.amazonaws.com/pomodoro-exp/patch.jpg'}} />
           <View style={styles.menuHeaderOverlay} />
 
           <Text style={styles.menuHeaderText}>
@@ -317,6 +334,15 @@ const styles = StyleSheet.create({
   menuFooterImage: {
     width: 150,
     height: 25,
+  },
+  menuButtonContainer: {
+    position: 'absolute',
+    top: 45,
+    left: 15,
+  },
+  menuButton: {
+    width: 32,
+    height: 21.5,
   },
   optionsContainer: {
     paddingTop: 12,
