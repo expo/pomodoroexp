@@ -5,7 +5,7 @@
   "main": "main.js",
   "author": "brentvatne@gmail.com",
   "exp": {
-    "name": "Pomodorexp",
+    "name": "Pomodoroexp",
     "primaryColor": "#9D3131",
     "iconUrl": "https://s3.amazonaws.com/pomodoroexp/icon.png"
   },

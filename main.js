@@ -12,13 +12,16 @@ import React, {
 } from 'react-native';
 
 import DrawerLayout from 'react-native-drawer-layout';
+
 import Button from './Button';
+import DataStore from './DataStore';
 import padNumber from './padNumber';
+import todayAtMidnight from './todayAtMidnight';
+import range from './range';
 
 const DEFAULT_WORK_DURATION = 0.25;
 const DEFAULT_BREAK_DURATION = 0.15;
-const ONE_SECOND = 500;
-
+const ONE_SECOND = 1000;
 const TOMATO = '🍅';
 
 class PomodoroApp extends React.Component {
@@ -138,6 +141,15 @@ class CounterScreen extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this._fetchCompletedCount();
+  }
+
+  async _pomodoroDidComplete() {
+    await DataStore.incrementHarvest(todayAtMidnight());
+    this._fetchCompletedCount();
+  }
+
   render() {
     let { currentScreen } = this.state;
     let backgroundColor = this.state.backgroundColor.interpolate({
@@ -151,6 +163,11 @@ class CounterScreen extends React.Component {
           {this._renderTimeRemaining()}
         </View>
         {this._renderButtons()}
+        <View style={styles.completedContainer}>
+          <Text style={styles.completedText}>
+            {this._renderTodaysCount()}
+          </Text>
+        </View>
       </Animated.View>
     );
   }
@@ -172,6 +189,16 @@ class CounterScreen extends React.Component {
         {`${padNumber(minutesRemaining, 2)}:${padNumber(secondsRemaining, 2)}`}
       </Text>
     );
+  }
+
+  async _fetchCompletedCount() {
+    let completedToday = await DataStore.harvestCountForDate(todayAtMidnight());
+    this.setState({completedToday});
+  }
+
+  _renderTodaysCount() {
+    let { completedToday } = this.state;
+    return range(completedToday).map(() => <Text>{TOMATO}</Text>);
   }
 
   _renderButtons() {
@@ -243,6 +270,7 @@ class CounterScreen extends React.Component {
       Animated.spring(this.state.backgroundColor, {toValue: 1}).start();
       this._timer = setInterval(() => {
         if (this.state.totalTimeRemaining === 0) {
+          this._pomodoroDidComplete();
           this._startBreak();
         } else {
           this.setState({totalTimeRemaining: this.state.totalTimeRemaining - 1});
@@ -280,9 +308,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    flex: 1,
+    flex: 3,
     alignItems: 'center',
     justifyContent: 'flex-end',
+  },
+  completedContainer: {
+    flex: 1,
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  completedText: {
+    fontSize: 30,
   },
   countdown: {
     color: '#fff',
