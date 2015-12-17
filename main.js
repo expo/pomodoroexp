@@ -74,7 +74,7 @@ class PomodoroApp extends React.Component {
           <View style={styles.menuHeaderOverlay} />
 
           <Text style={styles.menuHeaderText}>
-            Pomodoroexp
+            Pomodoro!
           </Text>
         </View>
 
@@ -378,8 +378,8 @@ const styles = StyleSheet.create({
     left: 15,
   },
   menuButton: {
-    width: 32,
-    height: 21.5,
+    width: 25.5,
+    height: 17.5,
   },
   optionsContainer: {
     paddingTop: 12,

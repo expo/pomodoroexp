@@ -1,13 +1,13 @@
 {
   "name": "pomodoro",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A Pomodoro timer!",
   "main": "main.js",
   "author": "brentvatne@gmail.com",
   "exp": {
-    "name": "Pomodoroexp",
+    "name": "Pomodoro",
     "primaryColor": "#9D3131",
-    "iconUrl": "https://s3.amazonaws.com/pomodoroexp/icon.png"
+    "iconUrl": "https://s3.amazonaws.com/pomodoro-exp/icon.png"
   },
   "dependencies": {
     "react-native": "exponentjs/react-native#2015-11-13",
