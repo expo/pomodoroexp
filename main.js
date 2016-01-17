@@ -105,6 +105,7 @@ class PomodoroApp extends React.Component {
 
       return (
         <TouchableWithoutFeedback
+          key={`${title}${option}`}
           onPress={() => this.setState((state) => { state[stateKey] = option; return state; })}>
           <View style={[styles.optionButton, isSelected && styles.optionButtonSelected]}>
             <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
