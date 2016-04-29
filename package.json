@@ -8,11 +8,11 @@
     "name": "Pomodoro",
     "primaryColor": "#9D3131",
     "iconUrl": "https://s3.amazonaws.com/pomodoro-exp/icon.png",
-    "abiVersion": "5.0.0"
+    "sdkVersion": "5.0.0"
   },
   "dependencies": {
     "react": "^0.14.7",
-    "react-native": "github:exponentjs/react-native#2016-02-09",
+    "react-native": "github:exponentjs/react-native#sdk-5.0.0",
     "react-native-drawer-layout": "^0.4.0"
   }
 }
