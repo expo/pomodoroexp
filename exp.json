@@ -1,0 +1,23 @@
+{
+  "name": "Pomodoro",
+  "description": "A pomodro app, super fun, you can time things and pause and stop and count tomatoes.",
+  "slug": "pomodoro",
+  "sdkVersion": "9.0.0",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "primaryColor": "#9D3131",
+  "iconUrl": "https://s3.amazonaws.com/pomodoro-exp/icon.png",
+  "notification": {
+    "iconUrl": "https://s3.amazonaws.com/exp-us-standard/placeholder-push-icon-blue-circle.png",
+    "color": "#000000"
+  },
+  "loading": {
+    "iconUrl": "https://s3.amazonaws.com/pomodoro-exp/icon.png",
+    "hideExponentText": false
+  },
+  "packagerOpts": {
+    "assetExts": [
+      "ttf"
+    ]
+  }
+}

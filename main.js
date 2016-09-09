@@ -1,6 +1,6 @@
-'use strict';
-
-import React, {
+import Exponent from 'exponent';
+import React from 'react';
+import {
   AppRegistry,
   Animated,
   Image,
@@ -54,6 +54,7 @@ class PomodoroApp extends React.Component {
   _renderMenuButton() {
     return (
       <TouchableOpacity
+        hitSlop={{top: 15, left: 15, right: 15, bottom: 15}}
         onPress={() => { this._drawerLayout.openDrawer() }}
         style={styles.menuButtonContainer}>
         <Image
@@ -105,6 +106,7 @@ class PomodoroApp extends React.Component {
 
       return (
         <TouchableWithoutFeedback
+          key={stateKey + option.toString()}
           onPress={() => this.setState((state) => { state[stateKey] = option; return state; })}>
           <View style={[styles.optionButton, isSelected && styles.optionButtonSelected]}>
             <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
