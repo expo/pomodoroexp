@@ -1,8 +1,0 @@
-{
-  "exponentServerPort": 19000,
-  "packagerPort": 19003,
-  "packagerPid": 43707,
-  "exponentServerNgrokUrl": "https://b8-i34.exponent.pomodoroexp.exp.direct",
-  "packagerNgrokUrl": "https://packager.b8-i34.exponent.pomodoroexp.exp.direct",
-  "ngrokPid": 43721
-}
