@@ -2,7 +2,7 @@
   "name": "Pomodoro",
   "description": "A pomodro app, super fun, you can time things and pause and stop and count tomatoes.",
   "slug": "pomodoro",
-  "sdkVersion": "9.0.0",
+  "sdkVersion": "10.0.0",
   "version": "1.0.0",
   "orientation": "portrait",
   "primaryColor": "#9D3131",
