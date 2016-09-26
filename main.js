@@ -268,7 +268,7 @@ class CounterScreen extends React.Component {
     let { workDuration } = this.props;
     clearInterval(this._timer);
 
-    this.setState({countdownState: 'active', totalTimeRemaining: workDuration * 60}, () => {
+    this.setState({countdownState: 'active', totalTimeRemaining: this.state.totalTimeRemaining}, () => {
       Animated.spring(this.state.backgroundColor, {toValue: 1}).start();
       this._timer = setInterval(() => {
         if (this.state.totalTimeRemaining === 0) {
@@ -289,6 +289,7 @@ class CounterScreen extends React.Component {
       Animated.spring(this.state.backgroundColor, {toValue: 2}).start();
       this._timer = setInterval(() => {
         if (this.state.totalTimeRemaining === 0) {
+          this._stopTimer();
           this._startTimer();
         } else {
           this.setState({totalTimeRemaining: this.state.totalTimeRemaining - 1});
