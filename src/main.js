@@ -1,8 +1,7 @@
-import Exponent from 'exponent';
 import React from 'react';
 import {
-  AppRegistry,
   Animated,
+  Dimensions,
   Image,
   StyleSheet,
   Text,
@@ -10,6 +9,11 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import Exponent, {
+  Constants,
+  Permissions,
+  Notifications,
+} from 'exponent';
 
 import DrawerLayout from 'react-native-drawer-layout';
 
@@ -19,20 +23,24 @@ import padNumber from './padNumber';
 import todayAtMidnight from './todayAtMidnight';
 import range from './range';
 
-const DEFAULT_WORK_DURATION = 0.25;
-const DEFAULT_BREAK_DURATION = 0.15;
+const DEFAULT_WORK_DURATION = 0.16667;
+const DEFAULT_BREAK_DURATION = 0.16667;
 const ONE_SECOND = 1000;
 const TOMATO = '🍅';
 
 class PomodoroApp extends React.Component {
+  state = {
+    workDuration: DEFAULT_WORK_DURATION,
+    breakDuration: DEFAULT_BREAK_DURATION,
+  };
 
-  constructor(props) {
-    super(props);
+  async componentDidMount() {
+    let result = await Permissions.askAsync(Permissions.NOTIFICATIONS);
 
-    this.state = {
-      workDuration: DEFAULT_WORK_DURATION,
-      breakDuration: DEFAULT_BREAK_DURATION,
-    };
+    if (Constants.isDevice && result.status !== 'granted') {
+      alert('You should enable notifications for this app otherwise you will not know when your timers expire!');
+      return;
+    }
   }
 
   render() {
@@ -40,7 +48,7 @@ class PomodoroApp extends React.Component {
       <View style={styles.container}>
         <DrawerLayout
           ref={(view) => { this._drawerLayout = view; }}
-          drawerWidth={310}
+          drawerWidth={Dimensions.get('window').width - 30}
           renderNavigationView={this._renderMenu.bind(this)}>
 
           <CounterScreen {...this.state} />
@@ -134,14 +142,12 @@ class PomodoroApp extends React.Component {
 
 class CounterScreen extends React.Component {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      backgroundColor: new Animated.Value(0),
-      totalTimeRemaining: this.props.workDuration * 60,
-      countdownState: 'idle',
-    };
-  }
+  state = {
+    backgroundColor: new Animated.Value(0),
+    countdownState: 'idle',
+    lastTick: null,
+    endTime: null,
+  };
 
   componentDidMount() {
     this._fetchCompletedCount();
@@ -174,17 +180,20 @@ class CounterScreen extends React.Component {
     );
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.workDuration !== this.props.workDuration &&
-        this.state.countdownState === 'idle') {
-      this.setState({totalTimeRemaining: nextProps.workDuration * 60});
-    }
-  }
-
   _renderTimeRemaining() {
-    let { totalTimeRemaining } = this.state;
-    let minutesRemaining = parseInt((totalTimeRemaining / 60), 10);
-    let secondsRemaining = totalTimeRemaining - minutesRemaining * 60;
+    let { endTime, lastTick } = this.state;
+    let minutesRemaining;
+    let secondsRemaining;
+
+    if (endTime && lastTick) {
+      minutesRemaining = Math.floor(((endTime - lastTick) / 1000) / 60);
+      secondsRemaining = Math.round(((endTime - lastTick) / 1000) - (minutesRemaining * 60));
+    } else if (this.state.countdownState === 'idle' && !endTime && !lastTick) {
+      minutesRemaining = Math.floor(this.props.workDuration);
+      secondsRemaining = Math.round((this.props.workDuration - minutesRemaining) * 60);
+    } else {
+      console.log({error: true, endTime, lastTick});
+    }
 
     return (
       <Text style={styles.countdown}>
@@ -200,7 +209,7 @@ class CounterScreen extends React.Component {
 
   _renderTodaysCount() {
     let { completedToday } = this.state;
-    return range(completedToday).map(() => <Text>{TOMATO}</Text>);
+    return range(completedToday).map((_, i) => <Text key={i}>{TOMATO}</Text>);
   }
 
   _renderButtons() {
@@ -220,7 +229,7 @@ class CounterScreen extends React.Component {
           <Button onPress={() => { this._pauseTimer() }}>
             Pause
           </Button>
-          <Button onPress={() => { this._stopTimer() }}>
+          <Button onPress={() => { this._stopTimer(true) }}>
             Stop
           </Button>
         </View>
@@ -231,7 +240,7 @@ class CounterScreen extends React.Component {
           <Button onPress={() => { this._startTimer() }}>
             Start
           </Button>
-          <Button onPress={() => { this._stopTimer() }}>
+          <Button onPress={() => { this._stopTimer(true) }}>
             Stop
           </Button>
         </View>
@@ -250,17 +259,28 @@ class CounterScreen extends React.Component {
   _pauseTimer() {
     this.setState({countdownState: 'paused'}, () => {
       Animated.spring(this.state.backgroundColor, {toValue: 0.5}).start();
+
       clearInterval(this._timer);
       this._timer = null;
+
+      if (this._notificationId) {
+        Notifications.cancelScheduledNotificationAsync(this._notificationId);
+      }
     });
   }
 
-  _stopTimer() {
+  _stopTimer(cancelNotification = false) {
     let { workDuration } = this.props;
-    this.setState({countdownState: 'idle', totalTimeRemaining: workDuration * 60}, () => {
+
+    this.setState({countdownState: 'idle', lastTick: null, endTime: null}, () => {
       Animated.spring(this.state.backgroundColor, {toValue: 0}).start();
       clearInterval(this._timer);
       this._timer = null;
+
+      if (cancelNotification && this._notificationId) {
+        Notifications.cancelScheduledNotificationAsync(this._notificationId);
+        this._notificationId = null;
+      }
     });
   }
 
@@ -268,14 +288,41 @@ class CounterScreen extends React.Component {
     let { workDuration } = this.props;
     clearInterval(this._timer);
 
-    this.setState({countdownState: 'active', totalTimeRemaining: workDuration * 60}, () => {
+    let currentTime = (new Date()).getTime();
+    let endTime;
+
+    if (this.state.countdownState === 'paused' && this.state.lastTick && this.state.endTime) {
+      let timeIdle = currentTime - this.state.lastTick;
+      endTime = this.state.endTime + timeIdle;
+    } else {
+      endTime = currentTime + workDuration * 60 * 1000;
+    }
+
+    this.setState({countdownState: 'active', endTime, lastTick: currentTime}, async () => {
       Animated.spring(this.state.backgroundColor, {toValue: 1}).start();
+
+      // Schedule notification
+      this._notificationId = await Notifications.scheduleLocalNotificationAsync({
+        title: 'Pomdoro complete!',
+        body: 'Break time...',
+        ios: {
+          sound: true,
+        },
+        android: {
+          vibrate: true,
+        },
+      }, {
+        time: endTime,
+      });
+
+      // Start ticker
       this._timer = setInterval(() => {
-        if (this.state.totalTimeRemaining === 0) {
+        let lastTick = (new Date()).getTime();
+        if (lastTick > endTime) {
           this._pomodoroDidComplete();
           this._startBreak();
         } else {
-          this.setState({totalTimeRemaining: this.state.totalTimeRemaining - 1});
+          this.setState({lastTick});
         }
       }, ONE_SECOND);
     });
@@ -285,13 +332,34 @@ class CounterScreen extends React.Component {
     let { breakDuration } = this.props;
     clearInterval(this._timer);
 
-    this.setState({countdownState: 'break', totalTimeRemaining: breakDuration * 60}, () => {
+
+    let currentTime = (new Date()).getTime();
+    let endTime = currentTime + breakDuration * 60 * 1000;
+
+    this.setState({countdownState: 'break', endTime, lastTick: currentTime}, async () => {
       Animated.spring(this.state.backgroundColor, {toValue: 2}).start();
+
+      // Schedule notification
+      this._notificationId = await Notifications.scheduleLocalNotificationAsync({
+        title: 'Break is over!',
+        body: 'Ready to start another Pomodoro?',
+        ios: {
+          sound: true,
+        },
+        android: {
+          vibrate: true,
+        },
+      }, {
+        time: endTime,
+      });
+
+      // Start ticker
       this._timer = setInterval(() => {
-        if (this.state.totalTimeRemaining === 0) {
+        let lastTick = (new Date()).getTime();
+        if (lastTick > endTime) {
           this._startTimer();
         } else {
-          this.setState({totalTimeRemaining: this.state.totalTimeRemaining - 1});
+          this.setState({lastTick});
         }
       }, ONE_SECOND);
     });
@@ -304,13 +372,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'center',
     flexDirection: 'row',
-    flex: 1,
+    flex: 0.5,
   },
   container: {
     flex: 1,
   },
   contentContainer: {
-    flex: 3,
+    flex: 1.5,
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
@@ -399,7 +467,6 @@ const styles = StyleSheet.create({
     fontWeight: '300',
   },
   optionContainer: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 15,
@@ -415,6 +482,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     color: '#888',
+    fontSize: Dimensions.get('window').width > 320 ? 14 : 12,
   },
   optionTextSelected: {
     color: '#fff',
@@ -423,4 +491,4 @@ const styles = StyleSheet.create({
 });
 
 
-AppRegistry.registerComponent('main', () => PomodoroApp);
+Exponent.registerRootComponent(PomodoroApp);
