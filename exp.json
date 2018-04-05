@@ -2,14 +2,13 @@
   "name": "Pomodoro",
   "description": "A pomodro timer, super fun, you can time things and pause and stop and count tomatoes.",
   "slug": "pomodoro",
-  "sdkVersion": "14.0.0",
+  "sdkVersion": "25.0.0",
   "version": "1.0.0",
   "orientation": "portrait",
   "primaryColor": "#cccccc",
   "privacy": "public",
   "icon": "./icon.png",
   "notification": {
-    "iconUrl": "https://s3.amazonaws.com/exp-us-standard/placeholder-push-icon-blue-circle.png",
     "color": "#000000"
   },
   "loading": {
