@@ -10,7 +10,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import Exponent, { Constants, Permissions, Notifications } from 'exponent';
+import Exponent, { Constants, Permissions, Notifications } from 'expo';
 
 import DrawerLayout from 'react-native-drawer-layout';
 
